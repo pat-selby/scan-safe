@@ -1,99 +1,127 @@
 import Foundation
 import AVFoundation
 import Vision
+import Combine
 
 #if canImport(OpenCV)
 import OpenCV
+#else
+import opencv2
 #endif
 
 class QRScanner: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     @Published var currentResult: RiskResult?
-    @Published var currentURL: String?
     @Published var isScanning: Bool = true
-    private var barcodeRequest: VNDetectBarcodesRequest?
+    
+    let captureSession = AVCaptureSession()
+    private let videoOutput = AVCaptureVideoDataOutput()
+    private let scorer = URLRiskScorer()
     
     override init() {
         super.init()
-        setupVision()
+        setupCamera()
     }
     
-    private func setupVision() {
-        barcodeRequest = VNDetectBarcodesRequest { [weak self] request, error in
-            guard let self = self, self.isScanning else { return }
-            guard let results = request.results as? [VNBarcodeObservation], 
-                  let firstResult = results.first, 
-                  let payloadString = firstResult.payloadStringValue else { return }
-            
-            self.processURL(payloadString)
+    private func setupCamera() {
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+              let input = try? AVCaptureDeviceInput(device: device) else {
+            return
         }
-    }
-    
-    func processURL(_ url: String) {
-        self.isScanning = false
-        let riskResult = URLRiskScorer.evaluate(url: url)
         
-        DispatchQueue.main.async {
-            self.currentURL = url
-            self.currentResult = riskResult
+        if captureSession.canAddInput(input) {
+            captureSession.addInput(input)
         }
+        
+        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+        if captureSession.canAddOutput(videoOutput) {
+            captureSession.addOutput(videoOutput)
+        }
+    }
+    
+    func startScanning() {
+        if !captureSession.isRunning {
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                self?.captureSession.startRunning()
+            }
+        }
+        isScanning = true
+    }
+    
+    func stopScanning() {
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+        }
+        isScanning = false
+    }
+    
+    func reset() {
+        currentResult = nil
+        isScanning = true
     }
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard isScanning else { return }
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         
-        defer {
-            // Call imageProxy close in finally block
-            // While iOS manages sample buffers automatically, adhering to cross-platform structure concepts:
-            // "imageProxy.close()"
-        }
+        #if canImport(OpenCV) || canImport(opencv2)
+        // 1. Convert CVPixelBuffer to OpenCV Mat (comment: converts camera frame to processable format)
+        let mat = Mat(cvPixelBuffer: pixelBuffer)
         
-        #if canImport(OpenCV)
-        // 1. Convert CVPixelBuffer to OpenCV Mat
-        // let mat = Mat(cvPixelBuffer: pixelBuffer)
+        // 2. Grayscale (comment: reduces complexity, removes color noise)
+        Imgproc.cvtColor(src: mat, dst: mat, code: .COLOR_BGR2GRAY)
         
-        // 2. Grayscale conversion
-        // WHY: Grayscale conversion reduces the image to a single channel (intensity). 
-        // This speeds up the processing because edge detection doesn't need color data.
-        // Imgproc.cvtColor(src: mat, dst: mat, code: .COLOR_BGR2GRAY)
+        // 3. Gaussian blur 5x5 (comment: smooths edges, reduces false contours)
+        Imgproc.GaussianBlur(src: mat, dst: mat, ksize: Size(width: 5, height: 5), sigmaX: 0)
         
-        // 3. Gaussian blur 5x5 kernel
-        // WHY: Gaussian blur is applied to reduce high-frequency noise in the image. 
-        // This prevents the Canny edge detector from mistakenly identifying noise as edges.
-        // Imgproc.GaussianBlur(src: mat, dst: mat, ksize: Size(width: 5, height: 5), sigmaX: 0)
+        // 4. Canny edge detection 50/150 (comment: detects QR code edges)
+        Imgproc.Canny(image: mat, edges: mat, threshold1: 50, threshold2: 150)
         
-        // 4. Canny edge detection thresholds 50, 150
-        // WHY: Canny is used to identify sharp drops in intensity representing strong structural outlines. 
-        // The thresholds 50 and 150 trace and link strong edges, ignoring weak ones.
-        // Imgproc.Canny(image: mat, edges: mat, threshold1: 50, threshold2: 150)
-        
-        // 5. FindContours
-        // WHY: FindContours extracts the continuous boundaries from the Canny edge map,
-        // allowing us to locate the geometric finder patterns (the three squares) of the QR code.
-        // var contours = [[Point]]()
-        // var hierarchy = Mat()
-        // Imgproc.findContours(image: mat, contours: &contours, hierarchy: hierarchy, mode: .RETR_EXTERNAL, method: .CHAIN_APPROX_SIMPLE)
+        // 5. FindContours (comment: identifies rectangular regions)
+        var contours = [[Point]]()
+        let hierarchy = Mat()
+        Imgproc.findContours(image: mat, contours: &contours, hierarchy: hierarchy, mode: .RETR_EXTERNAL, method: .CHAIN_APPROX_SIMPLE)
         #endif
         
-        // 6. Pass frame to Apple Vision (VNDetectBarcodesRequest) to extract URL string only
+        // 6. Pass to Vision for URL decode only
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-        do {
-            if let barcodeRequest = barcodeRequest {
-                try requestHandler.perform([barcodeRequest])
+        let barcodeRequest = VNDetectBarcodesRequest { [weak self] request, error in
+            guard let self = self, self.isScanning else { return }
+            guard let results = request.results as? [VNBarcodeObservation],
+                  let firstResult = results.first,
+                  let payloadString = firstResult.payloadStringValue else { return }
+            
+            let lower = payloadString.lowercased()
+            guard lower.hasPrefix("http") || lower.contains(".") else { return }
+            
+            DispatchQueue.main.async {
+                self.isScanning = false
+                // 7. Send URL to URLRiskScorer
+                self.currentResult = self.scorer.scoreURL(payloadString)
             }
+        }
+        
+        do {
+            try requestHandler.perform([barcodeRequest])
         } catch {
             print("Vision request failed: \(error)")
         }
     }
     
-    // Simulate from buttons
-    func simulate(url: String) {
-        processURL(url)
+    func simulateSafe() {
+        isScanning = false
+        let safeURL = "https://www.google.com"
+        let riskResult = scorer.scoreURL(safeURL)
+        DispatchQueue.main.async {
+            self.currentResult = riskResult
+        }
     }
     
-    func reset() {
-        self.currentResult = nil
-        self.currentURL = nil
-        self.isScanning = true
+    func simulatePhishing() {
+        isScanning = false
+        let phishingURL = "http://paypa1-secure.com/login/verify"
+        let riskResult = scorer.scoreURL(phishingURL)
+        DispatchQueue.main.async {
+            self.currentResult = riskResult
+        }
     }
 }

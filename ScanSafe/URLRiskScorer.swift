@@ -1,107 +1,130 @@
 import Foundation
 
-struct URLRiskScorer {
-    static func evaluate(url: String) -> RiskResult {
+class URLRiskScorer {
+    
+    func scoreURL(_ urlString: String) -> RiskResult {
         var score = 0
         var reasons: [String] = []
         
-        let lowerUrl = url.lowercased()
+        let lowerURL = urlString.lowercased()
         
-        // Rule 1: IP address instead of domain (+3)
-        // "Legitimate services use domain names (IP address detected)"
-        if let host = URL(string: url)?.host, isIPAddress(host) {
-            score += 3
-            reasons.append("Legitimate services use domain names (IP address detected)")
-        } else {
-            let ipPattern = "^(http[s]?://)?([0-9]{1,3}\\.){3}[0-9]{1,3}"
-            if url.range(of: ipPattern, options: .regularExpression) != nil {
-                score += 3
-                reasons.append("Legitimate services use domain names (IP address detected)")
-            }
+        let validURLString = lowerURL.hasPrefix("http") ? lowerURL : "https://\(lowerURL)"
+        guard let url = URL(string: validURLString), let host = url.host else {
+            return RiskResult(url: urlString, score: 0, level: .safe, reasons: ["Could not parse URL properly."])
         }
         
-        // Rule 2: Brand substitution (+3)
-        // "Classic phishing pattern (brand name substitution)"
-        let phishBrands = ["paypa1", "amaz0n", "g00gle", "faceb00k", "micr0s0ft", "app1e"]
-        var brandFired = false
-        for brand in phishBrands {
-            if lowerUrl.contains(brand) {
-                brandFired = true
+        // 1. IP address
+        let ipRegex = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+        if host.range(of: ipRegex, options: .regularExpression) != nil {
+            score += 3
+            reasons.append("Legitimate services use domain names (IP address detected)")
+        }
+        
+        // 2. Brand substitution
+        let brandSubstitutions = ["paypa1", "amaz0n", "g00gle", "faceb00k", "micr0s0ft", "app1e"]
+        for brand in brandSubstitutions {
+            if lowerURL.contains(brand) {
+                score += 3
+                reasons.append("Classic phishing pattern (brand name substitution)")
                 break
             }
         }
-        if brandFired {
-            score += 3
-            reasons.append("Classic phishing pattern (brand name substitution)")
-        }
         
-        // Rule 3: HTTP instead of HTTPS (+2)
-        // "No transport encryption (HTTP used)"
-        if lowerUrl.starts(with: "http://") {
+        // 3. HTTP not HTTPS
+        if validURLString.hasPrefix("http://") {
             score += 2
             reasons.append("No transport encryption (HTTP used)")
         }
         
-        // Rule 4: Subdomain count > 3 (+2)
-        // "Common in phishing infrastructure (too many subdomains)"
-        if let host = URL(string: url)?.host {
-            let parts = host.split(separator: ".")
-            if parts.count > 4 {
+        // 4. Subdomain count > 3
+        let components = host.split(separator: ".")
+        if components.count > 4 { 
+            score += 2
+            reasons.append("Common in phishing infrastructure (too many subdomains)")
+        }
+        
+        // 5. Path length > 50
+        let path = url.path
+        if path.count > 50 {
+            score += 1
+            reasons.append("Obfuscation indicator (long path)")
+        }
+        
+        // 6. Consonant ratio > 0.75 in domain
+        let domainOnly = host.replacingOccurrences(of: ".", with: "")
+        let letters = domainOnly.filter { $0.isLetter }
+        let totalLetters = letters.count
+        if totalLetters > 0 {
+            let pureVowels: Set<Character> = ["a", "e", "i", "o", "u"]
+            let consonants = letters.filter { !pureVowels.contains($0) }.count
+            let ratio = Double(consonants) / Double(totalLetters)
+            if ratio > 0.75 {
+                score += 1
+                reasons.append("Generated domain pattern (high consonant ratio)")
+            }
+        }
+        
+        // 7. URL shortener
+        let shorteners = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "tinyurl"]
+        for shortener in shorteners {
+            if host.contains(shortener) {
+                score += 3
+                reasons.append("URL shortener hides true destination")
+                break
+            }
+        }
+        
+        // 8. Suspicious path keywords
+        let suspiciousKeywords = ["verify", "confirm", "secure", "login", "update", "account", "password", "signin"]
+        for keyword in suspiciousKeywords {
+            if url.path.lowercased().contains(keyword) || lowerURL.contains(keyword) {
                 score += 2
-                reasons.append("Common in phishing infrastructure (too many subdomains)")
+                reasons.append("Suspicious keywords in URL path")
+                break 
             }
         }
         
-        // Rule 5: Path length > 50 chars (+1)
-        // "Obfuscation indicator (long path)"
-        if let parts = URL(string: url), let path = parts.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)?.removingPercentEncoding {
-            if parts.path.count > 50 {
-                score += 1
-                reasons.append("Obfuscation indicator (long path)")
-            }
-        } else if let path = url.components(separatedBy: "?").first, path.count > 100 {
-            if url.count > 50 && !url.contains("?") && url.components(separatedBy: "/").dropFirst(3).joined(separator: "/").count > 50 {
-                score += 1
-                reasons.append("Obfuscation indicator (long path)")
+        // 9. Free hosting
+        let freeHosts = ["000webhostapp", "weebly", "wix", "firebaseapp", "netlify", "github.io"]
+        for freeHost in freeHosts {
+            if host.contains(freeHost) {
+                score += 2
+                reasons.append("Free hosting platform (common in phishing)")
+                break
             }
         }
         
-        // Rule 6: Consonant ratio in domain > 0.75 (+1)
-        // "Generated domain pattern (high consonant ratio)"
-        if let host = URL(string: url)?.host {
-            let domainOnly = host.replacingOccurrences(of: ".", with: "")
-            let lettersOnly = domainOnly.filter { $0.isLetter }
-            if !lettersOnly.isEmpty {
-                let vowels: Set<Character> = ["a", "e", "i", "o", "u"]
-                let consonantCount = lettersOnly.filter { !vowels.contains($0) }.count
-                let ratio = Double(consonantCount) / Double(lettersOnly.count)
-                if ratio > 0.75 {
-                    score += 1
-                    reasons.append("Generated domain pattern (high consonant ratio)")
-                }
-            }
+        // 10. Punycode (xn--)
+        if host.contains("xn--") {
+            score += 3
+            reasons.append("Internationalized domain spoofing detected")
         }
         
-        let finalVerdict: Verdict
+        // 11. Excessive hyphens > 2 in domain
+        if host.filter({ $0 == "-" }).count > 2 {
+            score += 2
+            reasons.append("Hyphen abuse common in phishing domains")
+        }
+        
+        // 12. Numeric characters in domain
+        if host.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil && host.range(of: ipRegex, options: .regularExpression) == nil {
+            score += 1
+            reasons.append("Numbers in domain may indicate spoofing")
+        }
+        
+        let level: RiskLevel
         if score <= 2 {
-            finalVerdict = .GREEN
+            level = .safe
         } else if score <= 5 {
-            finalVerdict = .YELLOW
+            level = .suspicious
         } else {
-            finalVerdict = .RED
+            level = .highRisk
         }
         
-        let finalReason = score == 0 ? "Safe URL" : reasons.joined(separator: " • ")
-        
-        return RiskResult(score: score, verdict: finalVerdict, reason: finalReason)
-    }
-    
-    private static func isIPAddress(_ string: String) -> Bool {
-        let parts = string.split(separator: ".")
-        guard parts.count == 4 else { return false }
-        for part in parts {
-            guard let num = Int(part), num >= 0 && num <= 255 else { return false }
+        if score == 0 {
+            reasons.append("No suspicious indicators found.")
         }
-        return true
+        
+        return RiskResult(url: urlString, score: score, level: level, reasons: reasons)
     }
 }
