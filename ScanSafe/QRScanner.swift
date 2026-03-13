@@ -65,7 +65,11 @@ class QRScanner: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBuffe
         
         #if canImport(OpenCV) || canImport(opencv2)
         // 1. Convert CVPixelBuffer to OpenCV Mat (comment: converts camera frame to processable format)
-        let mat = Mat(cvPixelBuffer: pixelBuffer)
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+        let mat = Mat(uiImage: UIImage(cgImage: cgImage))
         
         // 2. Grayscale (comment: reduces complexity, removes color noise)
         Imgproc.cvtColor(src: mat, dst: mat, code: .COLOR_BGR2GRAY)

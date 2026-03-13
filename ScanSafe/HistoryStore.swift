@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 class HistoryStore: ObservableObject {
     @Published var history: [HistoryItem] = []

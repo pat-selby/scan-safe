@@ -2,7 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
     <key>NSCameraUsageDescription</key>
-    <string>ScanSafe needs camera access to scan QR codes for phishing detection.</string>
+    <string>ScanSafe needs camera access to scan QR codes for phishing detection</string>
+    <key>Privacy - Camera Usage Description</key>
+    <string>ScanSafe needs camera access to scan QR codes for phishing detection</string>
 </dict>
 </plist>

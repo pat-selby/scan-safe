@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "5C47FA62-B6FA-41CD-B896-F8F09883BB01"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "EFFFE97F-6C4A-46BF-8008-38567F718B91"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ScanSafe/QRScanner.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "15"
+            endingLineNumber = "15"
+            landmarkName = "QRScanner"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  uuid = "EFFFE97F-6C4A-46BF-8008-38567F718B91 - b162eb5c49cd8581"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ScanSafe.QRScanner.__allocating_init() -&gt; ScanSafe.QRScanner"
+                  moduleName = "ScanSafe.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pescybers/Desktop/ScanSafe/ScanSafe/QRScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0">
+               </Location>
+               <Location
+                  uuid = "EFFFE97F-6C4A-46BF-8008-38567F718B91 - a4a14117bb4be9af"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ScanSafe.QRScanner.init() -&gt; ScanSafe.QRScanner"
+                  moduleName = "ScanSafe.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pescybers/Desktop/ScanSafe/ScanSafe/QRScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "14"
+                  endingLineNumber = "14">
+               </Location>
+               <Location
+                  uuid = "EFFFE97F-6C4A-46BF-8008-38567F718B91 - 729ff26643346f87"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ScanSafe.QRScanner.captureSession.getter : __C.AVCaptureSession"
+                  moduleName = "ScanSafe.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pescybers/Desktop/ScanSafe/ScanSafe/QRScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
