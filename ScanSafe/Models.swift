@@ -28,15 +28,30 @@ struct RiskResult: Codable {
     let score: Int
     let level: RiskLevel
     let reasons: [String]
+    let userFindings: [String]
+    let techFindings: [String]
 }
 
 struct HistoryItem: Codable, Identifiable {
-    var id = UUID()
+    let id: UUID
     let url: String
     let score: Int
     let level: RiskLevel
     let reasons: [String]
+    let userFindings: [String]
+    let techFindings: [String]
     let timestamp: Date
+    
+    init(id: UUID = UUID(), url: String, score: Int, level: RiskLevel, reasons: [String], userFindings: [String], techFindings: [String], timestamp: Date) {
+        self.id = id
+        self.url = url
+        self.score = score
+        self.level = level
+        self.reasons = reasons
+        self.userFindings = userFindings
+        self.techFindings = techFindings
+        self.timestamp = timestamp
+    }
 }
 
 extension Color {

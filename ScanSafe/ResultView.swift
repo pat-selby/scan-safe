@@ -14,6 +14,7 @@ struct ResultView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     
+                    // Close button
                     HStack {
                         Spacer()
                         Button(action: {
@@ -75,24 +76,18 @@ struct ResultView: View {
                         }
                     
                     // Findings
-                    if !result.reasons.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
+                    if !result.userFindings.isEmpty {
+                        VStack(alignment: .leading, spacing: 16) {
                             Text("Findings:")
                                 .font(.headline)
                                 .foregroundColor(.white)
                             
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(result.reasons, id: \.self) { reason in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Image(systemName: "info.circle.fill")
-                                            .foregroundColor(result.level.color)
-                                            .frame(width: 20)
-                                        Text(reason)
-                                            .font(.subheadline)
-                                            .foregroundColor(.white.opacity(0.9))
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                    }
-                                }
+                            ForEach(Array(zip(result.userFindings, result.techFindings).enumerated()), id: \.offset) { index, pair in
+                                FindingRow(
+                                    userMessage: pair.0,
+                                    techMessage: pair.1,
+                                    accentColor: result.level.color
+                                )
                             }
                         }
                         .padding()
@@ -118,6 +113,64 @@ struct ResultView: View {
                     .padding(.bottom, 40)
                 }
             }
+        }
+    }
+}
+
+// MARK: - Finding Row
+
+struct FindingRow: View {
+    let userMessage: String
+    let techMessage: String
+    let accentColor: Color
+    
+    @State private var expanded: Bool = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            
+            // Plain English — always visible
+            HStack(alignment: .top, spacing: 8) {
+                Text(userMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.95))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil)
+            }
+            
+            // See details toggle
+            if !techMessage.isEmpty {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        expanded.toggle()
+                    }
+                }) {
+                    HStack(spacing: 4) {
+                        Text(expanded ? "Hide details" : "See details")
+                            .font(.caption)
+                            .foregroundColor(accentColor)
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.caption2)
+                            .foregroundColor(accentColor)
+                    }
+                }
+                
+                // Technical detail — shown when expanded
+                if expanded {
+                    Text(techMessage)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .padding(.top, 2)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.1))
         }
     }
 }

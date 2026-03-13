@@ -18,6 +18,8 @@ class HistoryStore: ObservableObject {
             score: result.score,
             level: result.level,
             reasons: result.reasons,
+            userFindings: result.userFindings,
+            techFindings: result.techFindings,
             timestamp: Date()
         )
         
