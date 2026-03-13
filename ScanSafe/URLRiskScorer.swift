@@ -38,7 +38,7 @@ class URLRiskScorer {
         
         // 4. Subdomain count > 3
         let components = host.split(separator: ".")
-        if components.count > 4 { 
+        if components.count > 4 {
             score += 2
             reasons.append("Common in phishing infrastructure (too many subdomains)")
         }
@@ -65,7 +65,7 @@ class URLRiskScorer {
         }
         
         // 7. URL shortener
-        let shorteners = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "tinyurl"]
+        let shorteners = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly"]
         for shortener in shorteners {
             if host.contains(shortener) {
                 score += 3
@@ -76,16 +76,27 @@ class URLRiskScorer {
         
         // 8. Suspicious path keywords
         let suspiciousKeywords = ["verify", "confirm", "secure", "login", "update", "account", "password", "signin"]
+        var foundKeyword = false
         for keyword in suspiciousKeywords {
-            if url.path.lowercased().contains(keyword) || lowerURL.contains(keyword) {
+            if url.path.lowercased().contains(keyword) {
                 score += 2
-                reasons.append("Suspicious keywords in URL path")
-                break 
+                reasons.append("Suspicious keywords in URL path (\(keyword))")
+                foundKeyword = true
+                break
+            }
+        }
+        if !foundKeyword {
+            for keyword in suspiciousKeywords {
+                if host.lowercased().contains(keyword) {
+                    score += 2
+                    reasons.append("Suspicious keywords in domain (\(keyword))")
+                    break
+                }
             }
         }
         
-        // 9. Free hosting
-        let freeHosts = ["000webhostapp", "weebly", "wix", "firebaseapp", "netlify", "github.io"]
+        // 9. Free hosting — expanded to catch wixsite, weebly subdomains etc.
+        let freeHosts = ["000webhostapp", "weebly", "wixsite", "wix.", "firebaseapp", "netlify", "github.io", "glitch.me", "herokuapp", "pages.dev"]
         for freeHost in freeHosts {
             if host.contains(freeHost) {
                 score += 2
@@ -106,8 +117,9 @@ class URLRiskScorer {
             reasons.append("Hyphen abuse common in phishing domains")
         }
         
-        // 12. Numeric characters in domain
-        if host.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil && host.range(of: ipRegex, options: .regularExpression) == nil {
+        // 12. Numeric characters in domain (excluding IP addresses)
+        if host.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil &&
+           host.range(of: ipRegex, options: .regularExpression) == nil {
             score += 1
             reasons.append("Numbers in domain may indicate spoofing")
         }
@@ -121,7 +133,7 @@ class URLRiskScorer {
             level = .highRisk
         }
         
-        if score == 0 {
+        if reasons.isEmpty {
             reasons.append("No suspicious indicators found.")
         }
         

@@ -122,8 +122,10 @@ class QRScanner: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBuffe
     
     func simulatePhishing() {
         isScanning = false
-        let phishingURL = "http://paypa1-secure.com/login/verify"
+        let phishingURL = "https://ivoryrobinson94.wixsite.com/0ne-dr1ve"
         let riskResult = scorer.scoreURL(phishingURL)
+        print("Score: \(riskResult.score)")
+        print("Reasons: \(riskResult.reasons)")
         DispatchQueue.main.async {
             self.currentResult = riskResult
         }
