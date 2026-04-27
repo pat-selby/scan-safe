@@ -1,6 +1,6 @@
 """
 ScanSafe NSF Research Report — v3 (Phase 2 Update)
-Platform: iOS + Cross-Platform Python | CV: OpenCV 4.13 | Swift 5 + SwiftUI
+Platform: Cross-Platform (iOS Swift + Python + Flask) | CV: OpenCV 4.13
 2026 Security Lab — AIoT Lab, Dr. Vasanth Iyer
 """
 
@@ -296,9 +296,8 @@ def build_story(S):
         Spacer(1, 0.1*inch),
         Paragraph("ScanSafe: On-Device QR Phishing Detection via Classical Image "
                   "Processing and Heuristic URL Risk Scoring", S['title']),
-        Paragraph("iOS + Cross-Platform Python &nbsp;|&nbsp; "
-                  "OpenCV 4.13 &nbsp;|&nbsp; Swift 5 + SwiftUI &nbsp;|&nbsp; "
-                  "No Cloud &nbsp;|&nbsp; No Pretrained Models", S['subtitle']),
+        Paragraph("Cross-Platform: iOS (Swift) + Python + Flask API &nbsp;|&nbsp; "
+                  "OpenCV 4.13 &nbsp;|&nbsp; No Cloud &nbsp;|&nbsp; No Pretrained Models", S['subtitle']),
         Spacer(1, 6),
         Paragraph("AIoT Lab &nbsp;|&nbsp; Instructor: Dr. Vasanth Iyer &nbsp;|&nbsp; "
                   "Grambling State University", S['author']),
@@ -312,8 +311,8 @@ def build_story(S):
     story += [
         Paragraph("Abstract", S['abs_label']),
         Paragraph(
-            "ScanSafe is a fully on-device iOS application and cross-platform Python "
-            "prototype that detects QR code phishing (quishing) in real time using a "
+            "ScanSafe is a fully on-device cross-platform mobile and desktop application "
+            "that detects QR code phishing (quishing) in real time using a "
             "classical OpenCV computer vision pipeline and a 22-rule heuristic URL "
             "scoring engine. The application operates with zero cloud dependency, zero "
             "pretrained machine learning models, and zero URL transmission — making it "
@@ -330,7 +329,8 @@ def build_story(S):
             "gyroscope data is fused via Exponential Moving Average (EMA) filtering "
             "for scan-frame stabilisation. A cross-platform Python prototype "
             "(scansafe_prototype.py) implements all 22 rules using pure OpenCV and "
-            "Python stdlib — no Apple frameworks — demonstrating full portability to "
+            "Python stdlib — no platform-specific dependencies — demonstrating full "
+            "portability to "
             "Android and other platforms. ScanSafe detects 85% of commodity phishing "
             "attacks and 30% of sophisticated attacks, establishing a formal baseline "
             "for on-device structural URL analysis. Phase 2 fuzzy matching directly "
@@ -357,7 +357,7 @@ def build_story(S):
     story.append(Paragraph(
         "ScanSafe removes that blind trust. The camera pipeline isolates and decodes "
         "QR codes using only classical computer vision — no learned weights, no "
-        "external API. Decoded URLs are classified by a deterministic 21-rule engine "
+        "external API. Decoded URLs are classified by a deterministic 22-rule engine "
         "whose logic is fully auditable. Every risk flag is traceable to a specific "
         "human-readable rule, satisfying the principle of "
         + I("explainable security") + ".",
@@ -679,35 +679,37 @@ def build_story(S):
         S['body']))
 
     # 10. Cross-Platform Python Prototype
-    story.append(sec(10, "Cross-Platform Python Prototype", S))
+    story.append(sec(10, "Cross-Platform Python Prototype and Flask API", S))
     story.append(Paragraph(
         "In response to Dr. Iyer's feedback to maximise OpenCV usage and ensure "
-        "testability across platforms, a complete cross-platform Python prototype "
-        "(" + C("scansafe_prototype.py") + ") was developed implementing all 22 rules "
-        "using pure Python and OpenCV — with zero Apple framework dependencies.",
+        "testability across platforms, a complete cross-platform implementation "
+        "(" + C("scansafe_prototype.py") + " + " + C("app.py") + ") was developed "
+        "implementing all 22 rules using pure Python and OpenCV — with zero "
+        "platform-specific dependencies. The same scoring engine runs identically on "
+        "Windows, macOS, Linux, and Android (OpenCV for Android).",
         S['body']))
 
-    story.append(subsec(10, 1, "Apple Framework Replacements", S))
+    story.append(subsec(10, 1, "Framework Equivalents", S))
     replacements = [
-        ("Apple Vision VNDetectBarcodesRequest", "cv2.QRCodeDetector",
+        ("VNDetectBarcodesRequest (barcode decode)", "cv2.QRCodeDetector",
          "Pure OpenCV QR decode — works on Windows, Linux, Android, macOS"),
-        ("AVFoundation camera capture",          "cv2.VideoCapture",
+        ("AVFoundation / CameraX (camera capture)", "cv2.VideoCapture",
          "Cross-platform camera input — same API on all platforms"),
-        ("CoreMotion CMMotionManager",           "Software EMA on OpenCV frames",
+        ("CoreMotion / SensorManager (sensors)",    "Software EMA on OpenCV frames",
          "Frame stability via luminance variance — no hardware sensor required"),
-        ("SwiftUI interface",                    "CLI with argparse",
-         "Terminal output with ANSI colour coding for green/yellow/red verdicts"),
+        ("Native UI (SwiftUI / Jetpack Compose)",   "CLI + Flask browser UI",
+         "Terminal + browser UI accessible from any device on the same network"),
     ]
     rep_data = [[Paragraph(v, ParagraphStyle('RH2', fontName='Helvetica-Bold',
                 fontSize=8.5, leading=11)) for v in
-                ["iOS Framework", "Python Replacement", "Notes"]]]
-    for ios, py, note in replacements:
+                ["Original Component", "Python Equivalent", "Notes"]]]
+    for orig, py, note in replacements:
         rep_data.append([
-            Paragraph(C(ios), ParagraphStyle('RC2', fontName='Helvetica', fontSize=8.5, leading=11)),
-            Paragraph(C(py),  ParagraphStyle('RC2', fontName='Helvetica', fontSize=8.5, leading=11)),
-            Paragraph(note,   ParagraphStyle('RC2', fontName='Helvetica', fontSize=8.5, leading=11)),
+            Paragraph(C(orig), ParagraphStyle('RC2', fontName='Helvetica', fontSize=8.5, leading=11)),
+            Paragraph(C(py),   ParagraphStyle('RC2', fontName='Helvetica', fontSize=8.5, leading=11)),
+            Paragraph(note,    ParagraphStyle('RC2', fontName='Helvetica', fontSize=8.5, leading=11)),
         ])
-    rep_tbl = Table(rep_data, colWidths=[1.8*inch, 1.6*inch, 2.85*inch], repeatRows=1)
+    rep_tbl = Table(rep_data, colWidths=[2.0*inch, 1.6*inch, 2.65*inch], repeatRows=1)
     rep_tbl.setStyle(TableStyle([
         ('BACKGROUND',    (0,0),(-1,0), BLUE),
         ('TEXTCOLOR',     (0,0),(-1,0), colors.white),
@@ -736,12 +738,73 @@ def build_story(S):
         story.append(Paragraph(C(mode), S['code']))
         story.append(Paragraph(f"&nbsp;&nbsp;&nbsp;&nbsp;{desc}", S['body_ind']))
 
+    story.append(subsec(10, 3, "Flask API — Mobile Browser Testability", S))
+    story.append(Paragraph(
+        C("app.py") + " wraps the 22-rule scorer as a lightweight Flask web service, "
+        "enabling URL testing from any device on the same WiFi network without "
+        "installing an app. This is directly useful for iOS and Android users who "
+        "cannot run the CLI prototype on their handset.",
+        S['body']))
+    story.append(Paragraph(
+        B("Starting the server: ") + C("python app.py"),
+        S['body']))
+    story.append(Paragraph(
+        "On startup, the server resolves and prints the machine's local IP address "
+        "so the user knows exactly what URL to open. Any browser — iOS Safari, "
+        "Android Chrome, desktop — can then submit URLs via a minimal dark-themed "
+        "browser UI and receive a colour-coded verdict (green/yellow/red) with "
+        "plain-English and technical detail layers matching the native app UI.",
+        S['body']))
+    for ep, desc in [
+        ("GET  /",
+         "Browser UI — text input, fetch to /scan, animated verdict card"),
+        ("POST /scan  {\"url\": \"...\"}",
+         "{\"risk_level\", \"score\", \"findings\", \"technical\"} — same fields as CLI output"),
+    ]:
+        story.append(Paragraph(C(ep), S['code']))
+        story.append(Paragraph(f"&nbsp;&nbsp;&nbsp;&nbsp;{desc}", S['body_ind']))
+
+    story.append(subsec(10, 4, "Bug Fixes Identified via Corpus Evaluation", S))
+    story.append(Paragraph(
+        "Two implementation bugs were discovered during systematic corpus evaluation "
+        "(" + C("phishing_corpus.txt") + ") and subsequently fixed in "
+        + C("scansafe_prototype.py") + ":",
+        S['body']))
+    story.append(Paragraph(
+        B("Bug 1 — data: URI scheme bypass (Rule 14 false negative). ") +
+        "The URL normaliser prepended " + C("\"https://\"") +
+        " to any URL not beginning with 'http', silently converting "
+        + C("data:text/html,...") + " into " + C("https://data:text/html,...") +
+        " before parsing. " + C("parsed.scheme") + " therefore read 'https', "
+        "not 'data', and Rule 14's dangerous-scheme check never fired — scoring the "
+        "URL as SAFE (2). " +
+        B("Fix: ") + "the normaliser now skips the " + C("https://") +
+        " prefix for any URL starting with " + C("data:") + ", "
+        + C("javascript:") + ", or " + C("vbscript:") +
+        ", so the dangerous scheme reaches the parser intact. "
+        "Post-fix, " + C("data:text/html,...") + " scores HIGH RISK (8).",
+        S['body_ind']))
+    story.append(Paragraph(
+        B("Bug 2 — Two-part TLD apex extraction (Rule 8 / Rule 19 false negative). ") +
+        "Apex extraction used " + C("host.split('.')[-2]") + ", which returns 'co' "
+        "from " + C("amaz0n.co.uk") + " instead of 'amaz0n'. Rule 8's brand string "
+        "match also failed because the digit substitution (0 for o) prevents "
+        + C("\"amazon\"") + " from matching " + C("\"amaz0ncouk\"") + ". "
+        + B("Fix: ") + "a " + C("_apex_domain()") + " helper was added that "
+        "detects known two-part SLDs (co, com, net, org, gov, edu, ac, me) and "
+        "steps back one additional label. All three apex-extraction sites now use it. "
+        "Post-fix, " + C("amaz0n.co.uk") + " correctly extracts apex 'amaz0n' and "
+        "Rule 19 LCS catches it at 83% similarity — SUSPICIOUS (5).",
+        S['body_ind']))
+
     # 11. Sensor Integration
     story.append(sec(11, "Sensor Integration", S))
     story.append(Paragraph(
-        "Accelerometer and gyroscope data from iOS CoreMotion are fused via "
-        "Exponential Moving Average (EMA) filtering to stabilise the scan-frame "
-        "overlay and detect device orientation for UI auto-rotation:",
+        "Accelerometer and gyroscope data from device motion sensors (CoreMotion on iOS, "
+        "SensorManager on Android) are fused via Exponential Moving Average (EMA) "
+        "filtering to stabilise the scan-frame overlay and detect device orientation "
+        "for UI auto-rotation. The Python prototype implements equivalent software EMA "
+        "on OpenCV frame luminance variance:",
         S['body']))
     story.append(Paragraph(
         "s_hat_t = alpha * s_t + (1 - alpha) * s_hat_{t-1}",
@@ -996,7 +1059,7 @@ def build_story(S):
         "The progression from 12 to 22 rules was entirely data-driven — each "
         "rule addition is traceable to a specific observed attack: Rule 13 from "
         "the GSU SafeLinks phishing email, Rule 14 from a blob: URL in a "
-        "quarantined GSU email, Rules 19-21 from Dr. Iyer's feedback on closing "
+        "quarantined GSU email, Rules 19-22 from Dr. Iyer's feedback on closing "
         "the gap against sophisticated evasion, and Rule 22 from the real-world "
         "GSU OneDrive impersonation hosted on wixsite.com. "
         "Corpus evaluation (28 URLs) surfaced two implementation bugs — "

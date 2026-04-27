@@ -1,23 +1,28 @@
 """
-ScanSafe — Cross-Platform Python Prototype
-==========================================
-Implements the full ScanSafe pipeline using pure OpenCV (no Apple frameworks).
+ScanSafe — Cross-Platform QR Phishing Detector
+===============================================
+Standalone Python implementation of the full ScanSafe pipeline using pure OpenCV.
+Runs on Windows, macOS, Linux, and Android (OpenCV for Android) — no platform
+dependencies beyond Python stdlib and opencv-python.
 
-Phase 1 — Core pipeline (replaces Apple frameworks):
-  - Apple Vision VNDetectBarcodesRequest  → cv2.QRCodeDetector
-  - iOS AVFoundation camera capture       → cv2.VideoCapture / image file
-  - iOS CoreMotion EMA sensor fusion      → frame-stability check via OpenCV
-  - 18-rule additive URL heuristic engine (identical logic to URLRiskScorer.swift)
+Phase 1 — Core pipeline:
+  - QR decode via cv2.QRCodeDetector (multi-stage fallback for coloured/logo QRs)
+  - Live webcam capture via cv2.VideoCapture
+  - Frame-stability check via OpenCV luminance variance
+  - 18-rule additive URL heuristic engine
 
 Phase 2 — Fuzzy matching layer (addresses Dr. Iyer's feedback):
   - LCS fuzzy domain similarity           → typosquatting detection (Rule 19)
   - SimHash near-duplicate URL detection  → structural spoofing detection (Rule 20)
+  - Urgency-language detection            → smishing/phishing signal (Rule 21)
+  - Free hosting platform detection       → anonymous phishing infrastructure (Rule 22)
   - Cloudflare Radar reputation lookup    → optional, off by default (--radar flag)
 
 Usage:
   python scansafe_prototype.py --image path/to/qr_image.png
   python scansafe_prototype.py --camera                       # live webcam mode
   python scansafe_prototype.py --url "https://example.com"   # URL-only mode
+  python scansafe_prototype.py --clipboard                    # score URL from clipboard
   python scansafe_prototype.py --url "https://example.com" --radar  # with Cloudflare
 
 Requirements:
@@ -41,7 +46,7 @@ class RiskLevel:
     SUSPICIOUS = "SUSPICIOUS"
     HIGH_RISK  = "HIGH RISK"
 
-    # Actual hex colours from ScanSafe iOS source (Models.swift)
+    # ANSI colours matching ScanSafe verdict badges
     COLOR = {
         SAFE:      "\033[92m",   # bright green
         SUSPICIOUS: "\033[93m",  # bright yellow
@@ -51,7 +56,7 @@ class RiskLevel:
 
     @staticmethod
     def from_score(score: int) -> str:
-        """Mirror exact thresholds from URLRiskScorer.swift lines 182-187."""
+        """Scoring thresholds: 0-2 → SAFE, 3-5 → SUSPICIOUS, 6+ → HIGH RISK."""
         if score <= 2:
             return RiskLevel.SAFE
         elif score <= 5:
@@ -88,17 +93,15 @@ class RiskResult:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# OPENCV QR PIPELINE  (replaces Apple Vision VNDetectBarcodesRequest)
+# OPENCV QR PIPELINE
 # ─────────────────────────────────────────────────────────────────────────────
 
 def opencv_preprocess(frame: "cv2.Mat") -> "cv2.Mat":
     """
-    Classical CV pipeline matching ScanSafe iOS:
-      ITU-R BT.601 grayscale → 5×5 Gaussian blur → Canny 50/150
+    Classical CV pipeline: ITU-R BT.601 grayscale → 5×5 Gaussian blur → Canny 50/150
 
-    This preprocessing is applied before QR detection to improve
-    decode reliability on low-contrast or noisy frames — mirroring
-    the OpenCV pipeline in QRScanner.swift.
+    Applied before QR detection to improve decode reliability on low-contrast or
+    noisy frames.
     """
     # Step 1: ITU-R BT.601 grayscale (OpenCV default for COLOR_BGR2GRAY)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -114,13 +117,10 @@ def opencv_preprocess(frame: "cv2.Mat") -> "cv2.Mat":
 
 def decode_qr_from_frame(frame: "cv2.Mat") -> Optional[str]:
     """
-    Pure OpenCV QR decode — replaces Apple Vision VNDetectBarcodesRequest.
-    Uses cv2.QRCodeDetector with multi-stage fallback pipeline to handle:
-      - Standard black-on-white QR codes
-      - Coloured/branded QR codes (e.g. gold GSU-branded phishing QRs)
-      - Embedded-logo QR codes (logo disrupts centre finder pattern)
-      - Low-contrast or noisy frames
-    Cross-platform: works on macOS, Windows, Linux, Android (OpenCV for Android).
+    Multi-stage OpenCV QR decode using cv2.QRCodeDetector.
+    Handles: standard black-on-white QRs, coloured/branded QRs (gold, blue, etc.),
+    embedded-logo QRs (logo disrupts centre finder pattern), low-contrast frames.
+    Works on macOS, Windows, Linux, and Android via OpenCV for Android.
     """
     import numpy as np
     detector = cv2.QRCodeDetector()
@@ -170,9 +170,8 @@ def decode_qr_from_image(image_path: str) -> Optional[str]:
 
 def scan_from_camera() -> Optional[str]:
     """
-    Live camera mode — equivalent to iOS AVFoundation live frame capture.
-    Replaces AVFoundation with cv2.VideoCapture (cross-platform).
-    Press 'q' to quit, SPACE to freeze and decode.
+    Live webcam mode via cv2.VideoCapture. Cross-platform: works on any device
+    with an accessible camera. Press 'q' to quit, SPACE to freeze and decode.
     """
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -438,9 +437,8 @@ def cloudflare_radar_lookup(host: str) -> Optional[dict]:
 
 def score_url(url_string: str, enable_radar: bool = False) -> RiskResult:
     """
-    20-rule additive heuristic scoring engine (Phase 1: Rules 1–18 + Phase 2: Rules 19–20).
-    Phase 1 rules mirror URLRiskScorer.swift exactly (same weights, same thresholds).
-    Phase 2 rules add fuzzy matching: LCS typosquatting + SimHash near-duplicate.
+    22-rule additive heuristic scoring engine (Phase 1: Rules 1–18, Phase 2: Rules 19–22).
+    Rules are independent and additive — each fired rule adds its weight to the total score.
     Pure Python — no platform dependencies beyond stdlib.
     """
     score = 0
