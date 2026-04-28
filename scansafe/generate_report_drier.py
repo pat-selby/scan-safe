@@ -1,7 +1,8 @@
 """
 ScanSafe — Trimmed Report for Dr. Vasanth Iyer
-Sections: Abstract · Problem · Architecture · 22-Rule Table ·
-          Evaluation · Limitations · Live Demo · Next Steps
+Sections: Abstract · Problem · Research Question · Architecture ·
+          22-Rule Table · Case Studies · Evaluation · Limitations ·
+          Live Demo · Next Steps · Conclusion · References
 """
 
 from reportlab.lib.pagesizes import letter
@@ -55,6 +56,9 @@ def make_styles():
                         leading=11, alignment=TA_CENTER, spaceAfter=6)
     S['img_cap']  = ParagraphStyle('IC', fontName='Times-Italic', fontSize=7.5,
                         leading=10, alignment=TA_CENTER, spaceAfter=2)
+    S['ref']      = ParagraphStyle('Re', fontName='Times-Roman',  fontSize=9,
+                        leading=12, leftIndent=0.3*inch,
+                        firstLineIndent=-0.3*inch, spaceAfter=3)
     return S
 
 def B(t): return f"<b>{t}</b>"
@@ -319,15 +323,33 @@ def build_story(S):
     story.append(sec(1, "Problem Statement", S))
     story.append(Paragraph(
         "QR codes are entirely opaque to users — the destination URL is only revealed "
-        "once the camera decodes the code. Adversaries exploit this by distributing "
-        "malicious QR codes via email, printouts, and social media (" + I("quishing") + "). "
-        "Existing defences require cloud connectivity (privacy risk, fails offline) or "
-        "pretrained ML classifiers (opaque, require retraining). ScanSafe removes this "
-        "blind trust through fully on-device, deterministic, explainable URL analysis.",
+        "once the camera decodes the code. Adversaries exploit this through " +
+        I("quishing") + ": distributing malicious QR codes via email, physical printouts, "
+        "and social media. Existing defences require cloud connectivity (privacy risk, "
+        "fails offline) or pretrained ML classifiers (opaque, require periodic retraining). "
+        "No production solution currently provides fully on-device, privacy-preserving QR "
+        "phishing detection that operates without internet access. ScanSafe addresses this gap.",
         S['body']))
 
-    # ── 2. System Architecture ───────────────────────────────────────────────
-    story.append(sec(2, "System Architecture", S))
+    # ── 2. Research Question and Hypothesis ──────────────────────────────────
+    story.append(sec(2, "Research Question and Hypothesis", S))
+    story.append(Paragraph(
+        B("Research Question: ") +
+        "Can a fully on-device classical computer vision pipeline provide meaningful "
+        "QR code phishing protection in low-connectivity and privacy-sensitive "
+        "environments — and what are the measurable tradeoffs in detection rates?",
+        S['body']))
+    story.append(Paragraph(
+        B("Hypothesis: ") +
+        "Classical heuristic scoring can detect the majority of commodity QR phishing "
+        "attacks without cloud connectivity, pretrained ML models, or user expertise — "
+        "but has a measurable ceiling against sophisticated attackers using clean HTTPS "
+        "infrastructure. Phase 2 fuzzy matching (LCS + SimHash) closes a portion of "
+        "this gap by catching visual domain spoofing that structural rules cannot detect.",
+        S['body']))
+
+    # ── 3. System Architecture ───────────────────────────────────────────────
+    story.append(sec(3, "System Architecture", S))
     story.append(Paragraph(
         B("Design constraints: ") +
         "No cloud API calls · No pretrained ML models · All computation on-device · "
@@ -343,11 +365,11 @@ def build_story(S):
         "(3) Canny edge detection (low=50, high=150), (4) Suzuki-Abe FindContours "
         "to isolate rectangular QR candidates, (5) cv2.QRCodeDetector decode, "
         "(6) 22-rule heuristic scoring. Accelerometer/gyroscope data is fused via "
-        "Exponential Moving Average (α=0.15) for scan-frame stabilisation.",
+        "Exponential Moving Average (α=0.15) for scan-frame stabilisation [6].",
         S['body']))
 
-    # ── 3. Detection Rules ───────────────────────────────────────────────────
-    story.append(sec(3, "22-Rule Heuristic Detection Engine", S))
+    # ── 4. 22-Rule Detection Engine ──────────────────────────────────────────
+    story.append(sec(4, "22-Rule Heuristic Detection Engine", S))
     story.append(Paragraph(
         "Rules are " + I("additive and independent") + " — each fired rule adds its "
         "weight to a cumulative score. Scores map to three verdict tiers:",
@@ -361,35 +383,64 @@ def build_story(S):
         "and 22 are directly motivated by real GSU phishing incidents.",
         S['caption']))
 
-    # ── 4. Evaluation and Results ────────────────────────────────────────────
-    story.append(sec(4, "Evaluation and Results", S))
+    # ── 5. Real-World Case Studies ───────────────────────────────────────────
+    story.append(sec(5, "Real-World Case Studies", S))
+    story.append(subsec(5, 1, "GSU SafeLinks Phishing Incident — Rule 13", S))
     story.append(Paragraph(
-        "ScanSafe was evaluated against a 28-URL phishing corpus comprising four "
-        "categories: (A) clearly phishing URLs expected HIGH RISK, "
+        "A phishing email targeting GSU students impersonated the IT help desk using "
+        "Microsoft SafeLinks wrapping to hide the malicious destination: "
+        + C("https://safelinks.protection.outlook.com/?url=http://malicious-dest.tk&data=...") +
+        ". The outer domain scored SAFE on all original rules. Rule 13 was added to "
+        "detect SafeLinks/urldefense wrappers and recursively score the inner URL, "
+        "achieving 100% coverage of this attack class.",
+        S['body']))
+    story.append(subsec(5, 2, "blob: URI in Quarantined GSU Email — Rule 14", S))
+    story.append(Paragraph(
+        "A quarantined GSU phishing email contained "
+        + C("blob:https://outlook.office.com/84d5ac76-...") +
+        ". The 18-rule engine returned SAFE (score 2) because " +
+        C("outlook.office.com") + " is a legitimate Microsoft domain. "
+        "Since blob: URLs are browser-generated in-memory references that never appear "
+        "in legitimate QR codes, Rule 14 was updated to treat dangerous URI schemes "
+        "(blob:, data:, javascript:) as forced HIGH RISK (+6 pts).",
+        S['body']))
+    story.append(subsec(5, 3, "GSU OneDrive Impersonation on Wix — Rule 22", S))
+    story.append(Paragraph(
+        C("ivoryrobinson94.wixsite.com/0ne-dr1ve") +
+        " impersonated Microsoft OneDrive on a free Wix site — passing all 18 "
+        "Phase 1 rules. Rule 22 (free hosting platform abuse, +3) combined with "
+        "Rule 19b path LCS (0ne-dr1ve → onedrive, 88% similarity, +3) now scores "
+        "this URL HIGH RISK (6+).",
+        S['body']))
+
+    # ── 6. Evaluation and Results ────────────────────────────────────────────
+    story.append(sec(6, "Evaluation and Results", S))
+    story.append(Paragraph(
+        "ScanSafe was evaluated against a 28-URL phishing corpus comprising: "
+        "(A) clearly phishing URLs expected HIGH RISK, "
         "(B) evasion-pattern URLs testing scoring headroom, "
         "(C) sophisticated phishing with no brand markers, and "
-        "(D) a 3-URL control group of known-legitimate sites.",
+        "(D) a 3-URL control group of known-legitimate sites [7,8,9].",
         S['body']))
     story.append(perf_table(S))
     story.append(Paragraph("Table 2: Detection performance summary.", S['caption']))
     story.append(Paragraph(
         B("Core finding: ") +
-        "The 85%/30% split is not a failure — it is the finding. ScanSafe establishes "
-        "the first documented baseline for on-device QR phishing detection using purely "
-        "structural URL analysis. Phase 2 LCS matching demonstrably improves detection "
-        "of visual spoofing: paypa1.com (83% LCS) and grarnbling.edu (89% LCS) are "
-        "caught by Rule 19 despite passing all 18 Phase 1 structural rules.",
+        "The 85%/30% split is the finding. ScanSafe establishes the first documented "
+        "baseline for on-device QR phishing detection using purely structural URL analysis. "
+        "Phase 2 LCS matching demonstrably improves detection of visual spoofing: "
+        "paypa1.com (83% LCS) and grarnbling.edu (89% LCS) are caught by Rule 19 "
+        "despite passing all 18 Phase 1 structural rules.",
         S['body']))
     story.append(Paragraph(
         B("Evasion headroom: ") +
         "Brand-spoofing URLs (secure-paypal.com, google-verify-account.com) scored 5 — "
-        "one point below the HIGH RISK threshold. This is a documented architectural "
-        "finding: the additive threshold creates a predictable gap for attacks that "
-        "trigger exactly two rules.",
+        "one point below the HIGH RISK threshold. The additive threshold architecture "
+        "creates a predictable gap for attacks that trigger exactly two rules.",
         S['body']))
 
-    # ── 5. Known Limitations ─────────────────────────────────────────────────
-    story.append(sec(5, "Known Limitations", S))
+    # ── 7. Known Limitations ─────────────────────────────────────────────────
+    story.append(sec(7, "Known Limitations", S))
     for item in [
         "Sophisticated phishing using HTTPS + clean registered domains — structural "
         "analysis cannot determine intent (30% TPR ceiling).",
@@ -404,9 +455,9 @@ def build_story(S):
         story.append(Paragraph(f"&#x2022;&nbsp;&nbsp;{item}", S['bullet']))
     story.append(Spacer(1, 4))
 
-    # ── 6. Live Demo ─────────────────────────────────────────────────────────
+    # ── 8. Live Demo ─────────────────────────────────────────────────────────
     story.append(PageBreak())
-    story.append(sec(6, "Live Demo — iOS Application Screenshots", S))
+    story.append(sec(8, "Live Demo — iOS Application Screenshots", S))
     story.append(Paragraph(
         "Screenshots captured from ScanSafe running on-device. "
         "Left to right: camera permission · live QR detection · HIGH RISK verdict · "
@@ -415,8 +466,8 @@ def build_story(S):
     story.append(Spacer(1, 6))
     story += live_demo_section(S)
 
-    # ── 7. Next Steps ────────────────────────────────────────────────────────
-    story.append(sec(7, "Next Steps", S))
+    # ── 9. Next Steps ────────────────────────────────────────────────────────
+    story.append(sec(9, "Next Steps", S))
     story.append(Paragraph(B("Phase 3 — Near Term:"), S['body']))
     for item in [
         "Port Phase 2 rules (LCS + SimHash + Rule 22) to Swift for full iOS parity.",
@@ -428,6 +479,49 @@ def build_story(S):
         "Research publication: 85%/30% baseline as primary contribution.",
     ]:
         story.append(Paragraph(f"&#x2022;&nbsp;&nbsp;{item}", S['bullet']))
+    story.append(Spacer(1, 6))
+
+    # ── 10. Conclusion ───────────────────────────────────────────────────────
+    story.append(sec(10, "Conclusion", S))
+    story.append(Paragraph(
+        "ScanSafe demonstrates that meaningful QR phishing detection is achievable "
+        "entirely on-device without machine learning or cloud connectivity. The 22-rule "
+        "engine, refined through live threat analysis of real GSU-targeted attacks, "
+        "achieves 85% detection of commodity phishing and catches visual spoofing variants "
+        "(paypa1.com, grarnbling.edu) that bypass all structural rules via Phase 2 LCS "
+        "fuzzy matching. The 85%/30% baseline and the three GSU case studies constitute "
+        "the core research contribution: a first documented on-device baseline for "
+        "structural QR phishing analysis and a validated methodology for data-driven "
+        "rule evolution. Full implementation: " +
+        B("github.com/pat-selby/scansafe-ios") + ".",
+        S['body']))
+
+    # ── References ───────────────────────────────────────────────────────────
+    story.append(HRFlowable(width="100%", thickness=0.5, color=GREY))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("References", S['h1']))
+    refs = [
+        "[1] Canny, J. (1986). A Computational Approach to Edge Detection. "
+            "IEEE Transactions on Pattern Analysis and Machine Intelligence, 8(6), 679–698.",
+        "[2] Suzuki, S. & Abe, K. (1985). Topological Structural Analysis of Digitized "
+            "Binary Images by Border Following. Computer Vision, Graphics, and Image "
+            "Processing, 30(1), 32–46.",
+        "[3] OpenCV 4.13 Documentation. https://opencv.org",
+        "[4] Charikar, M. (2002). Similarity Estimation Techniques from Rounding "
+            "Algorithms. Proceedings of STOC 2002. (SimHash — Rule 20)",
+        "[5] Apple AVFoundation Framework. "
+            "https://developer.apple.com/documentation/avfoundation",
+        "[6] Apple CoreMotion Framework. "
+            "https://developer.apple.com/documentation/coremotion",
+        "[7] APWG. (2025). Phishing Activity Trends Report Q1 2025. docs.apwg.org",
+        "[8] Abnormal Security. (2024). Email Threat Report 2024. abnormalsecurity.com",
+        "[9] Keepnet Labs. (2025). QR Code Phishing Statistics 2025. keepnetlabs.com",
+        "[10] Cloudflare Radar. https://radar.cloudflare.com "
+            "(optional Phase 2 reputation integration)",
+        "[11] ScanSafe Repository. https://github.com/pat-selby/scansafe-ios",
+    ]
+    for r in refs:
+        story.append(Paragraph(r, S['ref']))
 
     return story
 

@@ -12,3 +12,7 @@ scansafe-token-github.txt
 __pycache__/
 *.pyc
 *.pyo
+
+# Internal / full-length reports — not for distribution
+scansafe/docs/ScanSafe_NSF_Research_Report.pdf
+scansafe/docs/ScanSafe_NSF_Research_Report_v3.pdf
