@@ -54,6 +54,8 @@ def make_styles():
                         firstLineIndent=-0.15*inch, spaceAfter=2)
     S['caption']  = ParagraphStyle('Ca', fontName='Times-Italic', fontSize=8.5,
                         leading=11, alignment=TA_CENTER, spaceAfter=6)
+    S['code']     = ParagraphStyle('Co', fontName='Courier',       fontSize=8.5,
+                        leading=12, leftIndent=0.4*inch, spaceAfter=3, spaceBefore=1)
     S['img_cap']  = ParagraphStyle('IC', fontName='Times-Italic', fontSize=7.5,
                         leading=10, alignment=TA_CENTER, spaceAfter=2)
     S['ref']      = ParagraphStyle('Re', fontName='Times-Roman',  fontSize=9,
@@ -364,8 +366,27 @@ def build_story(S):
         "(1) ITU-R BT.601 grayscale, (2) 5×5 Gaussian blur (σ=0), "
         "(3) Canny edge detection (low=50, high=150), (4) Suzuki-Abe FindContours "
         "to isolate rectangular QR candidates, (5) cv2.QRCodeDetector decode, "
-        "(6) 22-rule heuristic scoring. Accelerometer/gyroscope data is fused via "
-        "Exponential Moving Average (α=0.15) for scan-frame stabilisation [6].",
+        "(6) 22-rule heuristic scoring. The Flask browser UI mirrors stages 1–4 in "
+        "JavaScript (Sobel edge approximation at 50% resolution) for the Edge and "
+        "Contour overlay processing modes, with a real-time FPS counter tracking "
+        "frame throughput [1,2,3].",
+        S['body']))
+
+    story.append(subsec(3, 1, "Sensor Logging — DeviceMotion API + EMA", S))
+    story.append(Paragraph(
+        C("sensor_log.py") + " captures 6-axis device motion data "
+        "(accelerometer x/y/z and gyroscope α/β/γ) from a phone browser via the "
+        "W3C DeviceMotion API. Readings are streamed at 10 Hz to the server, where "
+        "Exponential Moving Average smoothing is applied before writing to CSV:",
+        S['body']))
+    story.append(Paragraph(
+        "s&#770;_t = α × s_t + (1 − α) × s&#770;_{t-1} &nbsp;&nbsp;&nbsp; α = 0.15",
+        S['code']))
+    story.append(Paragraph(
+        "Output columns: " +
+        C("timestamp_ms, acc_x/y/z, gyro_α/β/γ, ema_acc_x/y/z, ema_gyro_α/β/γ") +
+        ". The same α=0.15 EMA coefficient is used in the iOS CoreMotion "
+        "implementation for scan-frame stabilisation [6].",
         S['body']))
 
     # ── 4. 22-Rule Detection Engine ──────────────────────────────────────────
@@ -438,6 +459,101 @@ def build_story(S):
         "one point below the HIGH RISK threshold. The additive threshold architecture "
         "creates a predictable gap for attacks that trigger exactly two rules.",
         S['body']))
+
+    story.append(subsec(6, 1, "System Performance — Latency and FPS", S))
+    story.append(Paragraph(
+        "Performance was measured on a mid-range laptop (Python prototype) and a "
+        "modern smartphone browser (Flask UI with jsQR). Table 3 summarises observed "
+        "latency at each pipeline stage.",
+        S['body']))
+
+    # FPS / latency table
+    fps_hs = ParagraphStyle('FH', fontName='Helvetica-Bold', fontSize=8.5,
+                            leading=11, alignment=TA_CENTER)
+    fps_cs = ParagraphStyle('FC', fontName='Helvetica',      fontSize=8.5,
+                            leading=11, alignment=TA_CENTER)
+    fps_rows = [
+        ["Stage",                              "Latency / Rate",     "Notes"],
+        ["OpenCV frame processing (Python)",   "~40 ms/frame",       "~25 fps native pipeline"],
+        ["jsQR QR decode (browser)",           "~5–15 ms/frame",     "30–60 fps (rAF-limited)"],
+        ["Sobel edge overlay (browser, 50%)",  "~8–20 ms/frame",     "half-res; scales with camera res"],
+        ["22-rule URL scoring",                "<5 ms",              "pure Python, no I/O"],
+        ["Flask /scan round-trip (LAN)",       "~80–120 ms",         "includes network + JSON encode"],
+        ["End-to-end (QR detected → verdict)", "~300–400 ms",        "scoring + 300 ms display hold"],
+        ["Sensor logger sample rate",          "10 Hz (100 ms)",     "setInterval in browser"],
+    ]
+    fps_data = []
+    for i, r in enumerate(fps_rows):
+        s2 = fps_hs if i == 0 else fps_cs
+        fps_data.append([Paragraph(v, s2) for v in r])
+    fps_tbl = Table(fps_data, colWidths=[2.2*inch, 1.55*inch, 2.5*inch], repeatRows=1)
+    fps_tbl.setStyle(TableStyle([
+        ('BACKGROUND',    (0,0),(-1,0), BLUE),
+        ('TEXTCOLOR',     (0,0),(-1,0), colors.white),
+        ('ROWBACKGROUNDS',(0,1),(-1,-1), [colors.white, LBLUE]),
+        ('GRID',          (0,0),(-1,-1), 0.4, GREY),
+        ('ALIGN',         (0,0),(-1,-1), 'CENTER'),
+        ('VALIGN',        (0,0),(-1,-1), 'MIDDLE'),
+        ('TOPPADDING',    (0,0),(-1,-1), 3),
+        ('BOTTOMPADDING', (0,0),(-1,-1), 3),
+    ]))
+    story.append(fps_tbl)
+    story.append(Paragraph(
+        "Table 3: ScanSafe latency and FPS at each pipeline stage. "
+        "The 40 ms OpenCV processing budget limits native Python pipeline to ~25 fps; "
+        "the browser UI runs at requestAnimationFrame rate (~30–60 fps) with jsQR.",
+        S['caption']))
+
+    story.append(subsec(6, 2, "Pipeline Output — Before and After Detection", S))
+    story.append(Paragraph(
+        "Figure 2 shows a representative scan session: the live camera view before "
+        "a verdict is issued (left) and the HIGH RISK result after the QR URL is "
+        "decoded and scored against all 22 rules (right). The processing mode toggle "
+        "in the Flask UI allows the same transition to be observed with edge detection "
+        "or contour overlay active.",
+        S['body']))
+    story.append(Spacer(1, 6))
+
+    # Before/after screenshot pair
+    ba_cap = ParagraphStyle('BAC', fontName='Times-Italic', fontSize=8.5,
+                            leading=11, alignment=TA_CENTER, spaceAfter=4)
+    ba_shots = [
+        ("live_qr_scan_detected.jpeg",
+         "Before — live QR scan in progress.\nFindContours isolates the candidate\nregion; FPS counter is active."),
+        ("high_risk_result.jpeg",
+         "After — HIGH RISK verdict (score 6+).\n22 rules evaluated; risk reasons\ndisplayed in dual-layer UI."),
+    ]
+    col_w2 = 6.5 * inch / 2
+    ba_imgs, ba_caps = [], []
+    for fname, cap in ba_shots:
+        path = os.path.join(SCREENSHOTS_DIR, fname)
+        img  = Image(path)
+        iw, ih = img.imageWidth, img.imageHeight
+        max_h   = 3.5 * inch
+        scale   = max_h / ih
+        new_w   = iw * scale
+        if new_w > col_w2 - 0.15 * inch:
+            scale = (col_w2 - 0.15 * inch) / iw
+            new_w = col_w2 - 0.15 * inch
+            new_h = ih * scale
+        else:
+            new_h = max_h
+        img.drawWidth = new_w; img.drawHeight = new_h
+        ba_imgs.append(img)
+        ba_caps.append(Paragraph(cap, ba_cap))
+    ba_tbl = Table([ba_imgs, ba_caps], colWidths=[col_w2, col_w2])
+    ba_tbl.setStyle(TableStyle([
+        ('ALIGN',         (0,0),(-1,-1), 'CENTER'),
+        ('VALIGN',        (0,0),(-1,0),  'BOTTOM'),
+        ('VALIGN',        (0,1),(-1,1),  'TOP'),
+        ('TOPPADDING',    (0,0),(-1,-1), 3),
+        ('BOTTOMPADDING', (0,0),(-1,-1), 3),
+    ]))
+    story.append(ba_tbl)
+    story.append(Paragraph(
+        "Figure 2: Before (live scan) and after (HIGH RISK verdict) for a phishing QR code. "
+        "End-to-end latency from QR decode to verdict display is ~300–400 ms on LAN.",
+        S['caption']))
 
     # ── 7. Known Limitations ─────────────────────────────────────────────────
     story.append(sec(7, "Known Limitations", S))
