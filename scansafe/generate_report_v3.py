@@ -377,7 +377,7 @@ def build_story(S):
         Paragraph("AIoT Lab &nbsp;|&nbsp; Instructor: Dr. Vasanth Iyer &nbsp;|&nbsp; "
                   "Grambling State University", S['author']),
         Paragraph("Patrick Ennin Selby &nbsp;|&nbsp; Research Assistant", S['author']),
-        Paragraph("github.com/pat-selby/scansafe-ios &nbsp;|&nbsp; April 2026", S['date']),
+        Paragraph("github.com/pat-selby/scan-safe &nbsp;|&nbsp; April 2026", S['date']),
         HRFlowable(width="100%", thickness=1.2, color=BLUE),
         Spacer(1, 8),
     ]
@@ -510,7 +510,7 @@ def build_story(S):
         ["QR Decode",         "cv2.QRCodeDetector (via OpenCV SPM)",  "cv2.QRCodeDetector"],
         ["Sensors",           "CoreMotion (CMMotionManager)",         "Software EMA on OpenCV frames"],
         ["Phase 2",           "Planned: LCS + SimHash (Swift port)",  "Implemented: Rules 19-22"],
-        ["Repository",        "github.com/pat-selby/scansafe-ios",    "scansafe_prototype.py"],
+        ["Repository",        "github.com/pat-selby/scan-safe",    "scansafe_prototype.py"],
     ]
     hs2 = ParagraphStyle('TS_H', fontName='Helvetica-Bold', fontSize=8.5, leading=11)
     cs2 = ParagraphStyle('TS_C', fontName='Helvetica',      fontSize=8.5, leading=11)
@@ -1114,7 +1114,7 @@ def build_story(S):
         "No user account, device identifier, or analytics data is collected.",
         "Processing is local and ephemeral — all intermediate data is discarded after each scan.",
         "Cloudflare Radar (optional) is off by default — user must explicitly enable with --radar.",
-        "Full risk engine logic is open-source and auditable at github.com/pat-selby/scansafe-ios.",
+        "Full risk engine logic is open-source and auditable at github.com/pat-selby/scan-safe.",
     ]
     for p in privacies:
         story.append(Paragraph(f"&#x2022;&nbsp;&nbsp;{p}", S['bullet']))
@@ -1160,7 +1160,7 @@ def build_story(S):
         "core research contribution: the first documented on-device baseline for "
         "structural QR phishing analysis and a validated fuzzy matching approach "
         "to closing the detection gap. The full implementation is available at "
-        + B("github.com/pat-selby/scansafe-ios") + ".",
+        + B("github.com/pat-selby/scan-safe") + ".",
         S['body']))
 
     # 20. Live Demo
@@ -1205,7 +1205,7 @@ def build_story(S):
         "[8] Abnormal Security. (2024). Email Threat Report 2024. abnormalsecurity.com",
         "[9] Keepnet Labs. (2025). QR Code Phishing Statistics 2025. keepnetlabs.com",
         "[10] Cloudflare Radar. https://radar.cloudflare.com (optional Phase 2 integration)",
-        "[11] ScanSafe Repository. https://github.com/pat-selby/scansafe-ios",
+        "[11] ScanSafe Repository. https://github.com/pat-selby/scan-safe",
     ]
     for r in refs:
         story.append(Paragraph(r, S['ref']))

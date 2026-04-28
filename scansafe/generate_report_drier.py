@@ -609,7 +609,7 @@ def build_story(S):
         "the core research contribution: a first documented on-device baseline for "
         "structural QR phishing analysis and a validated methodology for data-driven "
         "rule evolution. Full implementation: " +
-        B("github.com/pat-selby/scansafe-ios") + ".",
+        B("github.com/pat-selby/scan-safe") + ".",
         S['body']))
 
     # ── References ───────────────────────────────────────────────────────────
@@ -634,7 +634,7 @@ def build_story(S):
         "[9] Keepnet Labs. (2025). QR Code Phishing Statistics 2025. keepnetlabs.com",
         "[10] Cloudflare Radar. https://radar.cloudflare.com "
             "(optional Phase 2 reputation integration)",
-        "[11] ScanSafe Repository. https://github.com/pat-selby/scansafe-ios",
+        "[11] ScanSafe Repository. https://github.com/pat-selby/scan-safe",
     ]
     for r in refs:
         story.append(Paragraph(r, S['ref']))
