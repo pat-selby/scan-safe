@@ -195,13 +195,13 @@ def tech_stack_table(S):
     hs = ParagraphStyle('TS_H', fontName='Helvetica-Bold', fontSize=8.5, leading=11)
     cs = ParagraphStyle('TS_C', fontName='Helvetica',      fontSize=8.5, leading=11)
     stack = [
-        ["Layer",           "iOS App",                             "Python Prototype"],
+        ["Layer",           "iOS / Android App",                   "Python Prototype"],
         ["Language",        "Swift 5",                             "Python 3.11+"],
         ["UI",              "SwiftUI",                             "CLI + Flask browser UI"],
         ["Computer Vision", "OpenCV 4.13 (Swift Package Manager)", "opencv-python 4.13"],
         ["QR Decode",       "cv2.QRCodeDetector (OpenCV)",         "cv2.QRCodeDetector"],
         ["Sensors",         "CoreMotion — EMA (α=0.15)",           "Software EMA on frame luminance"],
-        ["Phase 2 Rules",   "Planned Swift port",                  "Implemented: Rules 19–22"],
+        ["Phase 2 Rules",   "Swift (iOS) + Kotlin (Android) — Phase 3", "Implemented: Rules 19–22"],
     ]
     data = []
     for i, r in enumerate(stack):
@@ -288,7 +288,7 @@ def build_story(S):
         Spacer(1, 0.05 * inch),
         Paragraph("ScanSafe: On-Device QR Phishing Detection via Classical "
                   "Image Processing and Heuristic URL Risk Scoring", S['title']),
-        Paragraph("iOS (Swift) + Python Prototype  |  OpenCV 4.13  |  "
+        Paragraph("Cross-Platform (iOS &amp; Android) + Python Prototype  |  OpenCV 4.13  |  "
                   "No Cloud  |  No Pretrained Models", S['subtitle']),
         Spacer(1, 4),
         Paragraph("AIoT Lab  |  Grambling State University  |  "
@@ -302,7 +302,7 @@ def build_story(S):
     story += [
         Paragraph("Abstract", S['abs_label']),
         Paragraph(
-            "ScanSafe is a fully on-device iOS security application that detects QR code "
+            "ScanSafe is a fully on-device cross-platform (iOS &amp; Android) security application that detects QR code "
             "phishing (quishing) in real time using a classical OpenCV pipeline and a "
             "22-rule heuristic URL scoring engine — with zero cloud dependency and zero "
             "pretrained ML models. The OpenCV pipeline applies ITU-R BT.601 grayscale "
@@ -457,7 +457,7 @@ def build_story(S):
 
     # ── 8. Live Demo ─────────────────────────────────────────────────────────
     story.append(PageBreak())
-    story.append(sec(8, "Live Demo — iOS Application Screenshots", S))
+    story.append(sec(8, "Live Demo — Application Screenshots", S))
     story.append(Paragraph(
         "Screenshots captured from ScanSafe running on-device. "
         "Left to right: camera permission · live QR detection · HIGH RISK verdict · "
@@ -470,7 +470,7 @@ def build_story(S):
     story.append(sec(9, "Next Steps", S))
     story.append(Paragraph(B("Phase 3 — Near Term:"), S['body']))
     for item in [
-        "Port Phase 2 rules (LCS + SimHash + Rule 22) to Swift for full iOS parity.",
+        "Port Phase 2 rules (LCS + SimHash + Rule 22) to Swift (iOS) and Kotlin (Android) for full cross-platform parity.",
         "Android port: Kotlin + OpenCV Android SDK, CameraX, same 22-rule engine.",
         "Fix data: URI normalisation bug (Rule 14 false negative — corpus finding).",
         "Fix two-part TLD apex extraction (amaz0n.co.uk false negative).",
