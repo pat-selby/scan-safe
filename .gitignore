@@ -16,3 +16,14 @@ __pycache__/
 # Internal / full-length reports — not for distribution
 scansafe/docs/ScanSafe_NSF_Research_Report.pdf
 scansafe/docs/ScanSafe_NSF_Research_Report_v3.pdf
+
+# Private course materials
+project_inst/
+research/
+
+# AI coding directives and local IDE settings
+claude.md
+.claude/
+
+# Runtime output
+sensor_data.csv
