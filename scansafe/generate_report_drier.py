@@ -17,7 +17,7 @@ from reportlab.platypus import (
 import os
 
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
-OUTPUT         = os.path.join(BASE_DIR, "docs", "ScanSafe_Report_DrIyer.pdf")
+OUTPUT         = os.path.join(BASE_DIR, "docs", "ScanSafe_Report_PatrickSelby.pdf")
 SCREENSHOTS_DIR = os.path.join(BASE_DIR, "assets", "screenshots")
 
 BLUE  = colors.HexColor('#1a3a6b')

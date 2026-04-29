@@ -32,7 +32,7 @@ scan-safe/
 │   ├── data/
 │   │   └── phishing_corpus.txt     # 28-URL evaluation corpus
 │   └── docs/
-│       └── ScanSafe_Report_DrIyer.pdf   # Trimmed report (6 pages)
+│       └── ScanSafe_Report_PatrickSelby.pdf   # Trimmed report (6 pages)
 ├── research/
 │   └── research_question.md
 └── README.md
@@ -112,7 +112,7 @@ while IFS= read -r url; do
 done < data/phishing_corpus.txt
 
 # 3. Regenerate the Dr. Iyer report PDF
-python generate_report_drier.py   # outputs docs/ScanSafe_Report_DrIyer.pdf
+python generate_report_drier.py   # outputs docs/ScanSafe_Report_PatrickSelby.pdf
 ```
 
 **Expected results against the 28-URL corpus:**
@@ -179,7 +179,7 @@ Output: `sensor_data.csv` with raw and EMA-smoothed readings for all 6 axes
 
 ## Report
 
-**[docs/ScanSafe_Report_DrIyer.pdf](scansafe/docs/ScanSafe_Report_DrIyer.pdf)** — 6-page
+**[docs/ScanSafe_Report_PatrickSelby.pdf](scansafe/docs/ScanSafe_Report_PatrickSelby.pdf)** — 6-page
 research report covering problem statement, research question, system architecture,
 22-rule engine, real-world case studies, evaluation results, known limitations,
 live demo screenshots, next steps, and references.
