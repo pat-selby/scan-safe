@@ -1,41 +1,44 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f5f3e9">
-<meta name="description" content="Watch Patrick Selby test ScanSafe, a QR link checker, in the lab and in the browser.">
-<title>ScanSafe walkthrough | Patrick Selby</title>
-<style>
-:root{color-scheme:light;--paper:#f5f3e9;--ink:#162e27;--muted:#426253;--rule:#bcc9ba}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 "Segoe UI",system-ui,sans-serif}
-main{width:min(100% - 36px,980px);margin:auto;padding:25px 0 48px}header,footer{display:flex;justify-content:space-between;gap:15px;color:var(--muted);font-size:.91rem}header{border-bottom:1px solid var(--rule);padding-bottom:13px}
-h1{font:normal clamp(2.45rem,6.5vw,4.7rem)/1.03 Georgia,serif;letter-spacing:-.052em;margin:32px 0 10px}p{max-width:66ch;margin:0 0 20px}video{width:100%;aspect-ratio:16/9;height:auto;background:#102f28;border-radius:14px;display:block}a{color:var(--ink);text-underline-offset:3px}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 22px}button{cursor:pointer;border:1px solid var(--rule);border-radius:8px;background:transparent;color:var(--ink);padding:8px 12px;font:inherit;font-size:.9rem}button:hover,button:focus-visible{background:#dce8d9}button time{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:.35em}summary{cursor:pointer;font-weight:650}details{border-top:1px solid var(--rule);padding:16px 0}details p{margin:12px 0 0}footer{border-top:1px solid var(--rule);padding-top:15px}::cue{font-family:system-ui,sans-serif}
-@media(max-width:520px){main{width:calc(100% - 24px);padding-top:16px}h1{margin-top:22px}header{flex-wrap:wrap;font-size:.82rem}video{border-radius:8px}nav{gap:6px}button{padding:8px}}
-</style>
-</head><body><main>
-<header><strong>Patrick Selby</strong><span>AIoT Lab · Grambling State University</span></header>
-<h1>ScanSafe walkthrough</h1>
-<p>See how ScanSafe reads a QR code and explains what it finds in the link. The video combines original phone screenshots from the April 2026 report with a recording of the browser prototype.</p>
-<video id="film" controls playsinline preload="metadata" poster="preview.jpg?v=2" aria-label="ScanSafe research and browser walkthrough"><source src="scansafe.mp4?v=2" type="video/mp4"><track kind="captions" src="captions.vtt" srclang="en" label="English"><a href="scansafe.mp4?v=2">Watch the MP4</a></video>
-<nav id="chapters" aria-label="Video chapters" hidden></nav>
-<details><summary>Read the transcript</summary>
-<p>A phone camera can read this QR code. But should you open the link? Patrick Selby built ScanSafe at Grambling State University to show what&#x27;s inside a code before you tap.</p>
-<p>These are pictures Patrick took during testing. On the phone, ScanSafe reads a code displayed on his laptop. The result lists three clues, including an unencrypted connection and the word verify in the link. Together, the rules give it a score of six.</p>
-<p>Patrick also tested links by hand. The Google address scored zero. Look closely at the second address. The last character in the brand name is a one, where you would expect the letter L. The lookalike and the login path raised its score to five.</p>
-<p>In the working prototype, enter a link and select Scan. The first link scores zero. Next, the simulated camera presents a test code. ScanSafe reads the address and scores it eight. The findings explain why.</p>
-<p>In the April report, Patrick tested twenty-eight links. Of twelve clearly phishing links, eleven received the high-risk verdict. A convincing phishing page can still have an ordinary-looking address. A low score only tells you the rules found few warning signs in the address itself.</p>
-</details><footer><span>1 min 19 sec</span><a href="scansafe.mp4?v=2">Open video directly</a></footer>
-</main><script>
-const film=document.getElementById('film');
-const chapters=document.getElementById('chapters');
-for(const [seconds,time,name] of [[10.96,'0:11','Phone test'],[27.2,'0:27','Lookalike link'],[42.4,'0:42','Browser demo'],[61,'1:01','Results']]){
-  const button=document.createElement('button');button.type='button';
-  const stamp=document.createElement('time');stamp.textContent=time;
-  button.append(stamp,document.createTextNode(name));
-  button.addEventListener('click',()=>{film.currentTime=seconds;film.play().catch(()=>film.focus());});
-  chapters.append(button);
-}
-chapters.hidden=false;
-</script></body></html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Scan a QR code or paste a link with ScanSafe. Try the live scanner and watch how its 22 rules explain the result.">
+<title>ScanSafe | Check a QR link</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Atkinson+Hyperlegible:wght@400;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap">
+<link rel="stylesheet" href="site.css"><script src="theme.js" defer></script><script src="page.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar" aria-label="Main navigation"><div class="wrap">
+<a class="brand" href="#top" aria-label="ScanSafe home"><svg aria-hidden="true" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 10V3h7m8 0h7v7m0 8v7h-7m-8 0H3v-7M9 14h10"/></svg>ScanSafe</a>
+<div class="navlinks"><a class="wide" href="#walkthrough">Demo</a><a class="wide" href="#examples">Test cases</a><a class="wide" href="#results">Results</a>
+<button type="button" class="theme" id="theme" aria-label="Switch to dark mode" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path id="theme-icon" d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></svg></button>
+<a class="btn ghost" href="https://github.com/pat-selby/scan-safe">GitHub</a></div></div></nav>
+<main id="main"><header class="hero" id="top"><div class="wrap">
+<div class="copy"><span class="eyebrow">QR phishing detection</span><h1>Check the link behind a QR code.</h1>
+<p class="lede">I built ScanSafe to see where a code leads before I open it. Scan a code or paste a link. The app checks the address against 22 rules and explains what it finds.</p>
+<div class="actions"><a class="btn primary" href="try/">Try ScanSafe</a><a class="btn ghost" id="watch" href="#walkthrough">Watch the demo</a></div><p class="credit">Grambling State University · AIoT Lab</p></div>
+<figure class="scanbox"><img class="qrframe" src="images/google-test-qr.png" width="330" height="330" alt="Test QR code encoding https://www.google.com">
+<div class="verdict"><div class="verdict-head"><b>SAFE</b><span>Score 0</span></div><code>www.google.com</code><p>No suspicious patterns detected in this URL.</p></div>
+<figcaption class="hint">The QR code and baseline result from my Google test.</figcaption></figure>
+</div></header>
+<section id="walkthrough"><div class="wrap"><div class="head"><span class="eyebrow">The demo</span><h2>Watch me scan a link.</h2></div>
+<div class="player"><video id="film" controls playsinline preload="metadata" poster="preview.jpg?v=3" aria-label="First-person ScanSafe walkthrough"><source src="scansafe.mp4?v=3" type="video/mp4"><track kind="captions" src="captions.vtt?v=3" srclang="en" label="English"><a href="scansafe.mp4?v=3">Open the video</a></video></div>
+<div class="chapters" id="chapters" aria-label="Video chapters" hidden><button type="button" class="chapter" data-seconds="0"><time>0:00</time>Introduction</button>
+<button type="button" class="chapter" data-seconds="9.4"><time>0:09</time>Phone test</button>
+<button type="button" class="chapter" data-seconds="23.76"><time>0:23</time>Manual scan</button>
+<button type="button" class="chapter" data-seconds="40.32"><time>0:40</time>Try ScanSafe</button></div>
+<details><summary>Read the transcript</summary><p>I built ScanSafe because a QR code hides the one thing I want to check first: where the link goes. Let me show you how I use it.</p>
+<p>I open ScanSafe, tap Scan QR Code, and point my camera at the code. Hereâ€™s a photo I took while testing it on my laptop. Once the code is in view, ScanSafe reads the address and shows me what it found.</p>
+<p>I can also paste a link and select Scan. In this test, the Google address scored zero. Look at the other address. What looks like the last letter in PayPal is actually the number one. ScanSafe flagged that, along with the word â€˜loginâ€™ in the link.</p>
+<p>When I get a warning, I read the reasons before deciding what to do. A low score can still miss something. To try it yourself, choose â€˜Try ScanSafeâ€™ on this page and run one of the examples.</p></details>
+<p class="film-note"><a href="scansafe.mp4?v=3">Open video directly</a></p></div></section>
+<section class="band" id="examples"><div class="wrap"><div class="head"><span class="eyebrow">Test cases</span><h2>What did the scanner catch?</h2></div>
+<div class="examples"><div><p class="lede">Compare three results from my original phone tests.</p><div class="choices" id="sample-options" role="group" aria-label="Choose a test result" hidden><button class="choice" type="button" data-sample="baseline" aria-pressed="true">Google baseline</button><button class="choice" type="button" data-sample="lookalike" aria-pressed="false">Brand lookalike</button><button class="choice" type="button" data-sample="warning" aria-pressed="false">High-risk link</button></div>
+<p id="sample-copy" class="sample-copy" aria-live="polite">The Google address scored zero. None of the rules found a warning sign.</p></div>
+<figure class="capture"><img id="sample-image" src="images/baseline.jpg" alt="Phone screenshot of the Google baseline with a SAFE verdict and score 0." loading="lazy"><figcaption>Original screenshot · April 2026</figcaption></figure></div></div></section>
+<section id="results"><div class="wrap"><div class="head"><span class="eyebrow">April 2026 evaluation</span><h2>How the rules performed.</h2><p class="lede">I tested the prototype on a small set of links. A clean-looking address can still lead to a phishing page.</p></div>
+<div class="numbers"><article class="num"><strong>28</strong><p>URLs in my evaluation set, including phishing examples and legitimate controls.</p></article><article class="num"><strong>11 of 12</strong><p>Clearly phishing URLs in the tested group received the high-risk verdict.</p></article><article class="num"><strong>&lt;5 ms</strong><p>Average time the rules took to score one address after decoding.</p></article></div></div></section></main>
+<footer><div class="wrap credits"><span>Patrick Selby · Grambling State University</span><a href="https://pat-selby.github.io/uniqr/">Explore UniQR</a></div></footer>
+</body></html>

@@ -1,0 +1,20 @@
+.scanner { max-width: 830px; padding-block: clamp(38px,6vw,70px); }
+.scanner h1 { font-size: clamp(42px,6vw,68px); margin-bottom: 12px; }
+.scanner form { margin: 28px 0 12px; }
+.scanner label,.examples-row>span { font-weight: 700; }
+.entry,.examples-row,.result-top { display: flex; align-items: center; gap: 10px; }
+.entry { margin-top: 5px; }
+.entry input { flex: 1; min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); }
+.examples-row { flex-wrap: wrap; margin-bottom: 16px; font-size: 16px; }
+#camera-view { max-width: 100%; width: 440px; height: auto; border: 2px solid var(--fg); border-radius: 12px; margin-top: 14px; }
+#status { color: var(--muted); margin: 12px 0; }
+.scan-result { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 22px; box-shadow: var(--shadow); }
+.result-top { justify-content: space-between; align-items: baseline; }
+.result-top h2 { font-size: clamp(25px,4vw,35px); }
+#result[data-level="SAFE"] h2 { color: #227d55; }
+#result[data-level="SUSPICIOUS"] h2 { color: #916214; }
+#result[data-level="HIGH RISK"] h2 { color: #c74c3d; }
+.scan-result code { display: block; margin: 8px 0 18px; overflow-wrap: anywhere; }
+.scan-result h3 { font-size: 20px; }.scan-result ul { padding-left: 23px; overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) { #result[data-level="SAFE"] h2 {color:#63d49c} #result[data-level="SUSPICIOUS"] h2 {color:#f4c56c} #result[data-level="HIGH RISK"] h2 {color:#ff9180} }
+@media(max-width:420px){.examples-row>span{width:100%}.examples-row{gap:7px}}

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Check a link or scan a QR code with ScanSafe in your browser.">
+<title>Try ScanSafe</title>
+<link rel="stylesheet" href="../site.css"><link rel="stylesheet" href="scanner.css">
+<script src="../theme.js" defer></script><script src="vendor/jsQR.js" defer></script><script src="scanner.js" defer></script>
+</head><body>
+<nav class="topbar"><div class="wrap"><a class="brand" href="../">ScanSafe</a><div class="navlinks"><a href="../#walkthrough">Walkthrough</a><button type="button" class="theme" id="theme" aria-label="Switch to dark mode" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path id="theme-icon" d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></svg></button></div></div></nav>
+<main class="wrap scanner"><h1>Try ScanSafe</h1>
+<p class="lede">Paste an address, choose an example, or use your camera. The scanner checks the link in this browser without opening it.</p>
+<form id="scan-form"><label for="address">Link to check</label><div class="entry"><input type="text" inputmode="url" id="address" placeholder="https://example.org" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="4096" required><button class="btn primary" id="submit">Scan</button></div></form>
+<div class="examples-row" aria-label="Run a test link"><span>Examples</span><button type="button" class="choice" data-example="https://www.google.com">Google baseline</button><button type="button" class="choice" data-example="https://paypa1.com/login">Brand lookalike</button><button type="button" class="choice" data-example="http://192.0.2.10/verify/account/login">High-risk test</button></div>
+<button class="btn ghost" id="camera" type="button" aria-controls="camera-view" aria-pressed="false">Scan QR Code</button>
+<video id="camera-view" playsinline muted hidden aria-label="Camera preview"></video>
+<p role="status" id="status"></p>
+<article id="result" class="scan-result" hidden aria-labelledby="level"><div class="result-top"><h2 id="level"></h2><b id="score"></b></div><code id="tested-address"></code><h3>What ScanSafe found</h3><ul id="findings"></ul><details><summary>Technical details</summary><ul id="technical"></ul></details></article>
+<p class="film-note">A low score means the rules found few warning signs. It does not establish that a site is safe.</p><noscript>Enable JavaScript to run the scanner.</noscript></main></body></html>
