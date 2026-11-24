@@ -1,0 +1,91 @@
+WEBVTT
+
+00:00:00.280 --> 00:00:02.473
+A phone camera can read this QR code.
+
+00:00:02.473 --> 00:00:03.907
+But should you open the link?
+
+00:00:04.147 --> 00:00:07.893
+Patrick Selby built ScanSafe at
+Grambling State University
+
+00:00:07.893 --> 00:00:10.312
+to show what's inside a code before you
+tap.
+
+00:00:11.240 --> 00:00:13.969
+These are pictures Patrick took during
+testing.
+
+00:00:13.969 --> 00:00:17.725
+On the phone, ScanSafe reads a code
+displayed on his laptop.
+
+00:00:17.965 --> 00:00:21.937
+The result lists three clues, including
+an unencrypted connection
+
+00:00:21.937 --> 00:00:23.982
+and the word verify in the link.
+
+00:00:23.982 --> 00:00:26.563
+Together, the rules give it a score of
+six.
+
+00:00:27.480 --> 00:00:29.827
+Patrick also tested links by hand.
+
+00:00:29.827 --> 00:00:31.469
+The Google address scored zero.
+
+00:00:31.709 --> 00:00:33.739
+Look closely at the second address.
+
+00:00:33.739 --> 00:00:36.400
+The last character in the brand name is
+a one,
+
+00:00:36.400 --> 00:00:38.407
+where you would expect the letter L.
+
+00:00:38.407 --> 00:00:41.757
+The lookalike and the login path raised
+its score to five.
+
+00:00:42.560 --> 00:00:45.611
+In the working prototype, enter a link
+and select Scan.
+
+00:00:46.800 --> 00:00:48.315
+The first link scores zero.
+
+00:00:49.800 --> 00:00:52.595
+Next, the simulated camera presents a
+test code.
+
+00:00:54.900 --> 00:00:57.601
+ScanSafe reads the address and scores it
+eight.
+
+00:00:57.601 --> 00:00:59.252
+The findings explain why.
+
+00:01:01.280 --> 00:01:04.734
+In the April report, Patrick tested
+twenty-eight links.
+
+00:01:04.734 --> 00:01:08.747
+Of twelve clearly phishing links, eleven
+received the high-risk verdict.
+
+00:01:08.987 --> 00:01:13.272
+A convincing phishing page can still
+have an ordinary-looking address.
+
+00:01:13.272 --> 00:01:16.863
+A low score only tells you the rules
+found few warning signs
+
+00:01:16.863 --> 00:01:18.032
+in the address itself.

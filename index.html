@@ -1,4 +1,41 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ScanSafe walkthrough | Patrick Selby</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#f3f6f1;color:#15372c;font:17px/1.55 Inter,system-ui,sans-serif}main{max-width:900px;margin:auto;padding:36px 5vw}header{border-bottom:1px solid #bdcdc1;padding-bottom:12px;color:#406553}h1{font-size:clamp(34px,6vw,60px);line-height:1.04;letter-spacing:-.055em;margin:30px 0 12px}p{max-width:65ch}video{display:block;width:100%;max-height:70vh;background:#0a0a0a;border-radius:12px}a{color:#14563c}summary{cursor:pointer;font-weight:650}details{margin:20px 0}</style>
-<main><header>Patrick Selby &nbsp; / &nbsp; Security projects</header><h1>ScanSafe walkthrough</h1><p>See what a QR code points to before opening the link. This recording shows two checks in the working browser prototype.</p><video controls playsinline preload="metadata" poster="preview.jpg" aria-label="Captioned ScanSafe screen recording"><source src="scansafe.mp4" type="video/mp4"></video><details><summary>Read the walkthrough</summary><ol><li>Type https://example.org and select Scan. ScanSafe scores it 0 and reports that its rules found no suspicious patterns.</li><li>Select Scan QR Code. A simulated camera presents a test QR code to the browser. ScanSafe decodes the link and checks it automatically.</li><li>The second result is HIGH RISK, with a score of 8. The findings include an unencrypted HTTP link, a numeric IP address and the word “login” in the path. These are warning signs. The score alone cannot establish whether a site is malicious.</li></ol></details><a href="scansafe.mp4">Open the video directly</a></main></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f3e9">
+<meta name="description" content="Watch Patrick Selby test ScanSafe, a QR link checker, in the lab and in the browser.">
+<title>ScanSafe walkthrough | Patrick Selby</title>
+<style>
+:root{color-scheme:light;--paper:#f5f3e9;--ink:#162e27;--muted:#426253;--rule:#bcc9ba}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 "Segoe UI",system-ui,sans-serif}
+main{width:min(100% - 36px,980px);margin:auto;padding:25px 0 48px}header,footer{display:flex;justify-content:space-between;gap:15px;color:var(--muted);font-size:.91rem}header{border-bottom:1px solid var(--rule);padding-bottom:13px}
+h1{font:normal clamp(2.45rem,6.5vw,4.7rem)/1.03 Georgia,serif;letter-spacing:-.052em;margin:32px 0 10px}p{max-width:66ch;margin:0 0 20px}video{width:100%;aspect-ratio:16/9;height:auto;background:#102f28;border-radius:14px;display:block}a{color:var(--ink);text-underline-offset:3px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 22px}button{cursor:pointer;border:1px solid var(--rule);border-radius:8px;background:transparent;color:var(--ink);padding:8px 12px;font:inherit;font-size:.9rem}button:hover,button:focus-visible{background:#dce8d9}button time{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:.35em}summary{cursor:pointer;font-weight:650}details{border-top:1px solid var(--rule);padding:16px 0}details p{margin:12px 0 0}footer{border-top:1px solid var(--rule);padding-top:15px}::cue{font-family:system-ui,sans-serif}
+@media(max-width:520px){main{width:calc(100% - 24px);padding-top:16px}h1{margin-top:22px}header{flex-wrap:wrap;font-size:.82rem}video{border-radius:8px}nav{gap:6px}button{padding:8px}}
+</style>
+</head><body><main>
+<header><strong>Patrick Selby</strong><span>AIoT Lab · Grambling State University</span></header>
+<h1>ScanSafe walkthrough</h1>
+<p>See how ScanSafe reads a QR code and explains what it finds in the link. The video combines original phone screenshots from the April 2026 report with a recording of the browser prototype.</p>
+<video id="film" controls playsinline preload="metadata" poster="preview.jpg?v=2" aria-label="ScanSafe research and browser walkthrough"><source src="scansafe.mp4?v=2" type="video/mp4"><track kind="captions" src="captions.vtt" srclang="en" label="English"><a href="scansafe.mp4?v=2">Watch the MP4</a></video>
+<nav id="chapters" aria-label="Video chapters" hidden></nav>
+<details><summary>Read the transcript</summary>
+<p>A phone camera can read this QR code. But should you open the link? Patrick Selby built ScanSafe at Grambling State University to show what&#x27;s inside a code before you tap.</p>
+<p>These are pictures Patrick took during testing. On the phone, ScanSafe reads a code displayed on his laptop. The result lists three clues, including an unencrypted connection and the word verify in the link. Together, the rules give it a score of six.</p>
+<p>Patrick also tested links by hand. The Google address scored zero. Look closely at the second address. The last character in the brand name is a one, where you would expect the letter L. The lookalike and the login path raised its score to five.</p>
+<p>In the working prototype, enter a link and select Scan. The first link scores zero. Next, the simulated camera presents a test code. ScanSafe reads the address and scores it eight. The findings explain why.</p>
+<p>In the April report, Patrick tested twenty-eight links. Of twelve clearly phishing links, eleven received the high-risk verdict. A convincing phishing page can still have an ordinary-looking address. A low score only tells you the rules found few warning signs in the address itself.</p>
+</details><footer><span>1 min 19 sec</span><a href="scansafe.mp4?v=2">Open video directly</a></footer>
+</main><script>
+const film=document.getElementById('film');
+const chapters=document.getElementById('chapters');
+for(const [seconds,time,name] of [[10.96,'0:11','Phone test'],[27.2,'0:27','Lookalike link'],[42.4,'0:42','Browser demo'],[61,'1:01','Results']]){
+  const button=document.createElement('button');button.type='button';
+  const stamp=document.createElement('time');stamp.textContent=time;
+  button.append(stamp,document.createTextNode(name));
+  button.addEventListener('click',()=>{film.currentTime=seconds;film.play().catch(()=>film.focus());});
+  chapters.append(button);
+}
+chapters.hidden=false;
+</script></body></html>
